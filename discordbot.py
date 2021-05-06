@@ -138,6 +138,16 @@ client.remove_command('help')
 @client.event
 async def on_ready():
     print('Discord bot is ready.')
+    start = time.time()
+    current = start
+
+    while True:
+        await asyncio.sleep(1)
+        current += 1
+
+        if current - start >= 21550:
+            raise KeyboardInterrupt
+
 
 @client.event
 async def on_message(message):
@@ -165,10 +175,10 @@ async def on_message(message):
 =========================================
 """
 commands_ = [
-    ['lr/list-recommendations',
+    [f'{command_prefix}lr/{command_prefix}list-recommendations',
         'Short for list-recommendations, as the name suggests, it lists the recommendations from the recommendations list.'],
-    ['rec/recommend', 'Helps you request a source to be added in Taiyaki.'],
-    ['ping', 'Sends the latency of the bot.']
+    [f'{command_prefix}rec/{command_prefix}recommend', 'Helps you request a source to be added in Taiyaki.'],
+    [f'{command_prefix}ping', 'Sends the latency of the bot.']
 ]
 
 async def help(ctx):
@@ -176,7 +186,7 @@ async def help(ctx):
     embed.set_author(name='Help')
     for a in commands_:
         embed.add_field(inline=False, name=a[0], value=a[1])
-    embed.add_field(inline=False, name='help',
+    embed.add_field(inline=False, name=f'{command_prefix}help',
                     value='Lists all the available commands the bot offers.')
     await ctx.send(embed=embed)
 

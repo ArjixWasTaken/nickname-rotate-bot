@@ -173,5 +173,12 @@
         "type": "manhua",
         "count": 1,
         "voters": []
+    },
+    {
+        "recommended_by": "200993688527175681",
+        "title": "invincible",
+        "type": "cartoon",
+        "count": 1,
+        "voters": []
     }
 ]
