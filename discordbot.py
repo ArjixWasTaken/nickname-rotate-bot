@@ -145,7 +145,7 @@ async def on_ready():
         await asyncio.sleep(1)
         current += 1
 
-        if current - start >= 21550:
+        if current - start >= 17959:
             raise KeyboardInterrupt
 
 
