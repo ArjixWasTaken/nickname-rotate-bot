@@ -2,7 +2,175 @@
     {
         "recommended_by": "246755970858876930",
         "title": "the beginning after the end",
-        "comic_type": "webtoon",
+        "type": "webtoon",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "467745715632734208",
+        "title": "free the darkness",
+        "type": "novel",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "217379673519161345",
+        "title": "this perfect day",
+        "type": "novel",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "200993688527175681",
+        "title": "the perfect run",
+        "type": "light novel",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "217379673519161345",
+        "title": "jubee: the lovely eyepatch",
+        "type": "anime",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "476316493143867403",
+        "title": "magician",
+        "type": "novel",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "476316493143867403",
+        "title": "return of the 8th class mage",
+        "type": "light novel",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "arcane sniper",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "reincarnation cycle",
+        "type": "manhua",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "kage no eiyuu no nichijou-tan",
+        "type": "manga",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "updater",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "reincarnation of the 8th-circle mage",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "volcanic age",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "mookhyang - the origin",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "it all starts with playing game",
+        "type": "manhua",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "the way to protect the female lead's older brother",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "my death flags show no sign of ending",
+        "type": "manga",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "after being reborn, i became the strongest to save everyone",
+        "type": "manga",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "mona",
+        "type": "novel",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "hero of his own opinion",
+        "type": "manhua",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "unnamed memory",
+        "type": "manga",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "the lord\u2019s coins aren\u2019t decreasing?!",
+        "type": "manhwa",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "great doctor ling ran",
+        "type": "manhua",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "kajiya de hajimeru isekai slow life",
+        "type": "manga",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "i'm a fake npc",
+        "type": "manhua",
         "count": 1,
         "voters": []
     }

@@ -3,15 +3,16 @@ import discord
 import json
 import os
 import asyncio
-import options
 import math
 import re
 import time
 import datetime as dt
+import operator
+import string
 
 
 def format_title_case(text): return ' '.join(['(Dub)' if word.lower() == 'dub' else (
-    'I' * len(word) if word.lower().replace('i', '') == '' else word.title()) for word in text.split()])
+    'I' * len(word) if word.lower().replace('i', '') == '' else string.capwords(word)) for word in text.split()])
 
 
 if not os.path.isfile('recommendations.json'):
@@ -116,19 +117,15 @@ def getErrorEmbed(errMsg):
     Setup
 =========================================
 """
-command_prefix = 'u!'
-BOT_TOKEN = options.BOT_TOKEN
-isSelfBot = options.isSelfBot
+command_prefix = '!'
+BOT_TOKEN = os.environ['TOKEN']
 
 
 def run(client):
-    if isSelfBot:
-        client.run(BOT_TOKEN, bot=False)
-    else:
-        client.run(BOT_TOKEN)
+    client.run(BOT_TOKEN, bot=False)
 
 
-client = commands.Bot(command_prefix=command_prefix)
+client = commands.Bot(command_prefix=command_prefix, self_bot=True, fetch_offline_members=False)
 client.remove_command('help')
 
 """
@@ -142,6 +139,25 @@ client.remove_command('help')
 async def on_ready():
     print('Discord bot is ready.')
 
+@client.event
+async def on_message(message):
+    messages = await message.channel.history(limit=1).flatten()
+    message = messages[0]
+
+    if message.content.startswith(f'{command_prefix}help'):
+        await help(message.channel)
+    elif message.content == f'{command_prefix}ping':
+        await ping(message.channel)
+    elif re.search(f'{command_prefix}(rec|recommend)', message.content):
+        await recommend(message, re.sub(f"^{command_prefix}rec(ommend)?", "", message.content))
+    elif re.search(f'{command_prefix}(lr|list-recommendations)', message.content):
+        page = 1
+        page_match = re.search(f'{command_prefix}(lr|list-recommendations)\s+(\d+)', message.content)
+
+        if page_match:
+            page = int(page_match.group(2))
+
+        await list_recommendations(message.channel, pageNum=page)
 
 """
 =========================================
@@ -155,8 +171,6 @@ commands_ = [
     ['ping', 'Sends the latency of the bot.']
 ]
 
-
-@client.command()
 async def help(ctx):
     embed = discord.Embed(color=0x808080)
     embed.set_author(name='Help')
@@ -166,17 +180,13 @@ async def help(ctx):
                     value='Lists all the available commands the bot offers.')
     await ctx.send(embed=embed)
 
-
-@client.command()
 async def ping(ctx):
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
-
-@client.command(aliases=['rec'])
-async def recommend(ctx, *, arguments=''):
+#@client.command(aliases=['rec'])
+async def recommend(ctx, arguments=''):
     recommended_by = str(ctx.author.id)
-    regex = r"(?<=[-{1,2}|/])([a-zA-Z0-9]*)[ |:|\"]*([\w|.|?|=|&|+| |:|/|\\]*)(?=[ |\"]|$)"
-    finds = re.findall(regex, arguments.lower())
+    finds = [operator.itemgetter(0, -1)(tuple(y for y in x if y)) for x in re.findall("-{1,2}([A-Za-z]+)\s+([A-Za-z]+)?('(.*?)')?(\"(.*?)\")?", arguments.lower())]
     title, comic_type = None, None
 
     for param, value in finds:
@@ -186,31 +196,30 @@ async def recommend(ctx, *, arguments=''):
             comic_type = value
 
     if title and comic_type:
-        all_recs = [[x['title'], x['requested_by']] for x in get_recs()]
+        all_recs = [[x['title'], x['recommended_by']] for x in get_recs()]
         for title_, requester in all_recs:
             if recommended_by == requester and title.lower().strip() == title_.lower().strip():
-                await ctx.send(embed=getErrorEmbed('You can\'t vote for your own request.'))
+                await ctx.channel.send(embed=getErrorEmbed('You can\'t vote for your own request.'))
                 return
         if title in [x for x, i in all_recs]:
             res = increment_counter_for_site(title, recommended_by)
             if res:
-                await ctx.send(embed=getSuccessEmbed('**{}** was already recommended, adding a vote to it instead...'.format(title)))
+                await ctx.channel.send(embed=getSuccessEmbed('**{}** was already recommended, adding a vote to it instead...'.format(title)))
             else:
-                await ctx.send(embed=getErrorEmbed('You can\'t vote multiple times for the same comic.'))
+                await ctx.channel.send(embed=getErrorEmbed('You can\'t vote multiple times for the same comic.'))
             return
         add_recommend({
             'recommended_by': recommended_by,
             'title': title,
-            'comic_type': comic_type,
+            'type': comic_type,
             'count': 1,
             'voters': []
         })
-        await ctx.send(embed=getSuccessEmbed('Successfully recommended **{}** *({})*.'.format(title, comic_type.upper())))
+        await ctx.channel.send(embed=getSuccessEmbed('Successfully recommended **{}** *({})*.'.format(title, comic_type.upper())))
     else:
-        await ctx.send(embed=getErrorEmbed('Please send the correct arguments.\nExamples:\n\t``--title "The Beginning After the End" --type webtoon``\n\t\tor\n\t``-tt "The Beginning After the End" -tp webtoon``'))
+        await ctx.channel.send(embed=getErrorEmbed('Please send the correct arguments.\nExamples:\n\t``--title "The Beginning After the End" --type webtoon``\n\t\tor\n\t``-tt "The Beginning After the End" -tp webtoon``'))
 
-
-@client.command(aliases=['list-recommendations', 'lr'])
+#@client.command(aliases=['list-recommendations', 'lr'])
 async def list_recommendations(ctx, pageNum: int = 1):
     recs = sorted(get_recs(), key=lambda x: x['count'])[::-1]
     pageEmbeds = {}
@@ -230,7 +239,7 @@ async def list_recommendations(ctx, pageNum: int = 1):
                     inline=False,
                     name=f"{current+1}. " + format_title_case(tmpVar['title']),
                     value='Type: {}\nRecommended by: {}{}'.format(
-                        tmpVar['comic_type'].title(
+                        tmpVar['type'].title(
                         ), f"<@{tmpVar['recommended_by']}>",
                         '' if tmpVar['count'] == 1 else f"\nVotes: {tmpVar['count']}"
                     )
@@ -238,7 +247,7 @@ async def list_recommendations(ctx, pageNum: int = 1):
             current += 1
         if page < pages:
             embed.set_footer(
-                text=f'Use "u!lr {page+1}" to go to the next page!')
+                text=f'Use "{command_prefix}lr {page+1}" to go to the next page!')
         pageEmbeds[page] = embed
 
     if pageNum in pageEmbeds:
