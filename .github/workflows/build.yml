@@ -21,6 +21,11 @@ jobs:
       - name: Install Discord.py
         run: pip3 install discord.py
 
+      - name: Run Bot
+        run: python discordbot.py
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
       - name: Auto Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -28,8 +33,3 @@ jobs:
           file_pattern: recommendations.json
           repository: .
           skip_fetch: true
-
-      - name: Run Bot
-        run: python discordbot.py
-        env:
-          TOKEN: ${{ secrets.TOKEN }}
