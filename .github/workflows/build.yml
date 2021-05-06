@@ -24,7 +24,7 @@ jobs:
       - name: Run Bot
         run: python discordbot.py
         env:
-          TOKEN: ${{ secrets.BOT_TOKEN }}
+          TOKEN: ${{ secrets.TOKEN }}
 
       - name: Auto Commit
         uses: stefanzweifel/git-auto-commit-action@v4
