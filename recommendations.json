@@ -187,5 +187,12 @@
         "type": "manga",
         "count": 1,
         "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "the tanaka family reincarnates",
+        "type": "manga",
+        "count": 1,
+        "voters": []
     }
 ]
