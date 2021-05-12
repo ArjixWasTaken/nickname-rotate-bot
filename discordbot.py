@@ -49,16 +49,21 @@ def update_rec(title, new_data):
 
     return found
 
-
-def remove_rec(title):
+# Returns 0 if found and was rec'd by user
+# Returns 1 if found but was not rec'd by user
+# Returns 2 if not found
+def remove_rec(title, user):
     all_recs = get_recs()
     new_list = []
-    found = False
+    found = 2
 
     for rec in all_recs:
         if rec['title'].strip().lower() == title.strip().lower():
-            found = True
-            continue
+            found -= 1
+            if rec['recommended_by'] == str(user):
+                found -= 1
+                continue
+
         new_list.append(rec)
 
     with open('recommendations.json', 'w') as f:
@@ -168,6 +173,17 @@ async def on_message(message):
             page = int(page_match.group(2))
 
         await list_recommendations(message.channel, pageNum=page)
+    elif re.search(f'{command_prefix}(rr|remove-rec)', message.content):
+        title = re.sub(f'{command_prefix}(rr|remove-rec)', '', message.content).strip()
+        title = [x for x in re.search("(['\"](.*?)['\"])?(.*)?", title).groups() if x][-1]
+        result = remove_rec(title, message.author.id)
+
+        if result == 0:
+            await message.channel.send(embed=getSuccessEmbed('{} was successfully removed from recommendations.'.format(format_title_case(title))))
+        elif result == 1:
+            await message.channel.send(embed=getErrorEmbed('{} could not be removed from recommendations as you did not recommend it.'.format(format_title_case(title))))
+        elif result == 2:
+            await message.channel.send(embed=getErrorEmbed('{} could not be removed from recommendations as it has not been recommended.'.format(format_title_case(title))))
 
 """
 =========================================
@@ -176,9 +192,10 @@ async def on_message(message):
 """
 commands_ = [
     [f'{command_prefix}lr/{command_prefix}list-recommendations',
-        'Short for list-recommendations, as the name suggests, it lists the recommendations from the recommendations list.'],
-    [f'{command_prefix}rec/{command_prefix}recommend', 'Helps you request a source to be added in Taiyaki.'],
-    [f'{command_prefix}ping', 'Sends the latency of the bot.']
+        'Short for list-recommendations, as the name suggests, it lists the recommendations from the recommendations list. Example: `!lr`'],
+    [f'{command_prefix}rec/{command_prefix}recommend', 'Helps you request a source to be added in Taiyaki. Example: `!rec -tt "Recommended Novel" -tp Novel`'],
+    [f'{command_prefix}remove-rec/{command_prefix}rr', 'Removes recommendation if recommended by current user. Example: `!rr title to remove`'],
+    [f'{command_prefix}ping', 'Sends the latency of the bot. Example: `!ping`']
 ]
 
 async def help(ctx):
@@ -193,10 +210,9 @@ async def help(ctx):
 async def ping(ctx):
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
-#@client.command(aliases=['rec'])
 async def recommend(ctx, arguments=''):
     recommended_by = str(ctx.author.id)
-    finds = [operator.itemgetter(0, -1)(tuple(y for y in x if y)) for x in re.findall("-{1,2}([A-Za-z]+)\s+([A-Za-z]+)?('(.*?)')?(\"(.*?)\")?", arguments.lower())]
+    finds = [[x[0], "".join(x[1:])] for x in re.findall("-{1,2}([A-Za-z]+)\s+([A-Za-z]+)?(?:'(.*?)')?(?:\"(.*?)\")?(.*?)(?=-{1,2}[A-Za-z]+|$)", arguments.lower())]
     title, comic_type = None, None
 
     for param, value in finds:
@@ -229,7 +245,6 @@ async def recommend(ctx, arguments=''):
     else:
         await ctx.channel.send(embed=getErrorEmbed('Please send the correct arguments.\nExamples:\n\t``--title "The Beginning After the End" --type webtoon``\n\t\tor\n\t``-tt "The Beginning After the End" -tp webtoon``'))
 
-#@client.command(aliases=['list-recommendations', 'lr'])
 async def list_recommendations(ctx, pageNum: int = 1):
     recs = sorted(get_recs(), key=lambda x: x['count'])[::-1]
     pageEmbeds = {}
