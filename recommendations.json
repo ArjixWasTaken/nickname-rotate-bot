@@ -208,5 +208,12 @@
         "type": "webtoon",
         "count": 1,
         "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "kekkon yubiwa monogatari",
+        "type": "webtoon",
+        "count": 1,
+        "voters": []
     }
 ]
