@@ -236,5 +236,19 @@
         "type": "webtoon",
         "count": 1,
         "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "the lazy prince becomes a genius ",
+        "type": "webtoon",
+        "count": 1,
+        "voters": []
+    },
+    {
+        "recommended_by": "674710789138939916",
+        "title": "immortal undertaker ",
+        "type": "manga",
+        "count": 1,
+        "voters": []
     }
 ]
