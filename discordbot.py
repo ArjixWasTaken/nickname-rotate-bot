@@ -37,7 +37,7 @@ def add_user(guild_id, userID, member):
 def remove_user(guild_id, userID):
     settings = get_settings()
     if str(guild_id) not in settings['servers']:
-        settings['servers'][str(guild_id)] = []
+        settings['servers'][str(guild_id)] = {}
 
     del settings['servers'][str(guild_id)][str(userID)]
 
