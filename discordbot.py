@@ -103,7 +103,7 @@ async def ping(ctx):
 
 
 
-@client.command()
+@client.command(aliases=["rot"])
 async def rotate_me(ctx):
     await ctx.send(str(ctx.author.id))
     if (add_user(str(ctx.author.id))):
