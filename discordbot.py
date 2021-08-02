@@ -104,7 +104,10 @@ async def on_ready():
                     nick = nicknames[server][member]
                     nicknames[server][member] = nick[1:] + nick[0]
 
-                await member_.edit(nick="| " + nicknames[server][member] + " |")  # noqa
+                try:
+                    await member_.edit(nick="| " + nicknames[server][member] + " |")  # noqa
+                except:
+                    pass
 
         current = time.time()
 
