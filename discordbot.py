@@ -27,7 +27,8 @@ def add_user(channelID, userID):
 
         with open('settings.json', 'w') as f:
             json.dump(settings, f, indent=4)
-
+        return True
+    return False
 
 def remove_user(channelID, userID):
     settings = get_settings()
@@ -102,9 +103,13 @@ async def ping(ctx):
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
 
+
 @client.command()
 async def rotate_me(ctx, arguments=''):
-    pass
+    if (add_user(str(ctx.author.id))):
+        await ctx.send(embed=getSuccessEmbed("Successfully added you."))
+    else:
+        await ctx.send(embed=getErrorEmbed("Unknown Error."))
 
 
 if __name__ == '__main__':
