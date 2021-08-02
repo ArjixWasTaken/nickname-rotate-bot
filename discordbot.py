@@ -106,10 +106,10 @@ async def ping(ctx):
 
 @client.command(aliases=["rotate"])
 async def rotate_toggle(ctx):
-    if (add_user(str(ctx.message.channel), str(ctx.author.id))):
+    if (add_user(str(ctx.message.channel.guild.id), str(ctx.author.id))):
         await ctx.send(embed=getSuccessEmbed("Successfully added you."))
     else:
-        remove_user(str(ctx.message.channel), str(ctx.author.id))
+        remove_user(str(ctx.message.channel.guild.id), str(ctx.author.id))
         await ctx.send(embed=getSuccessEmbed("Successfully removed you."))
 
 @client.command()
