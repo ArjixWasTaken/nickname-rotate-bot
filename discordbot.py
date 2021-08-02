@@ -110,6 +110,9 @@ async def rotate_me(ctx):
     else:
         await ctx.send(embed=getErrorEmbed("Unknown Error."))
 
+@client.command()
+async def exit(ctx):
+    raise KeyboardInterrupt
 
 if __name__ == '__main__':
     run(client)
