@@ -127,16 +127,23 @@ async def ping(ctx):
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
 
-
 @client.command(aliases=["rotate"])
-async def rotate_toggle(ctx):
+async def rotate_toggle(ctx, member: discord.User = None):
     global nicknames
-    if (add_user(str(ctx.message.channel.guild.id), str(ctx.author.id), ctx.message.author)):
-        await ctx.send(embed=getSuccessEmbed("Successfully added you."))
+    if member is not None and ctx.author.id in (246755970858876930, 674710789138939916):
+        if (add_user(str(ctx.message.channel.guild.id), str(member.id), member)):
+            await ctx.send(embed=getSuccessEmbed("Successfully added {}.".format(member.mention)))
+        else:
+            remove_user(str(ctx.message.channel.guild.id), str(member.id))
+            del nicknames[str(ctx.message.channel.guild.id)][str(member.id)]
+            await ctx.send(embed=getSuccessEmbed("Successfully removed {}.".format(member.mention)))
     else:
-        remove_user(str(ctx.message.channel.guild.id), str(ctx.author.id))
-        del nicknames[str(ctx.message.channel.guild.id)][str(ctx.author.id)]
-        await ctx.send(embed=getSuccessEmbed("Successfully removed you."))
+        if (add_user(str(ctx.message.channel.guild.id), str(ctx.author.id), ctx.message.author)):
+            await ctx.send(embed=getSuccessEmbed("Successfully added you."))
+        else:
+            remove_user(str(ctx.message.channel.guild.id), str(ctx.author.id))
+            del nicknames[str(ctx.message.channel.guild.id)][str(ctx.author.id)]
+            await ctx.send(embed=getSuccessEmbed("Successfully removed you."))
 
 
 @client.command()
