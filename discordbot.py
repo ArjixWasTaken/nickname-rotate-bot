@@ -103,14 +103,15 @@ async def ping(ctx):
 
 
 
-@client.command(aliases=["rot"])
-async def rotate_me(ctx):
+@client.command(aliases=["rotate"])
+async def rotate_toggle(ctx):
     await ctx.send(str(ctx.author.id))
     await ctx.send(str(get_settings()))
     if (add_user(str(ctx.message.channel), str(ctx.author.id))):
         await ctx.send(embed=getSuccessEmbed("Successfully added you."))
     else:
-        await ctx.send(embed=getErrorEmbed("Unknown Error."))
+        remove_user(str(ctx.message.channel), str(ctx.author.id))
+        await ctx.send(embed=getSuccessEmbed("Successfully removed you."))
 
 @client.command()
 async def exit(ctx):
