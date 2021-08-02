@@ -3,15 +3,16 @@ import discord
 import json
 import os
 import asyncio
-import options
 import math
 import re
 import time
 import datetime as dt
+import operator
+import string
 
 
 def format_title_case(text): return ' '.join(['(Dub)' if word.lower() == 'dub' else (
-    'I' * len(word) if word.lower().replace('i', '') == '' else word.title()) for word in text.split()])
+    'I' * len(word) if word.lower().replace('i', '') == '' else string.capwords(word)) for word in text.split()])
 
 
 if not os.path.isfile('recommendations.json'):
@@ -48,16 +49,21 @@ def update_rec(title, new_data):
 
     return found
 
-
-def remove_rec(title):
+# Returns 0 if found and was rec'd by user
+# Returns 1 if found but was not rec'd by user
+# Returns 2 if not found
+def remove_rec(title, user):
     all_recs = get_recs()
     new_list = []
-    found = False
+    found = 2
 
     for rec in all_recs:
         if rec['title'].strip().lower() == title.strip().lower():
-            found = True
-            continue
+            found -= 1
+            if rec['recommended_by'] == str(user):
+                found -= 1
+                continue
+
         new_list.append(rec)
 
     with open('recommendations.json', 'w') as f:
@@ -116,19 +122,15 @@ def getErrorEmbed(errMsg):
     Setup
 =========================================
 """
-command_prefix = 'u!'
-BOT_TOKEN = options.BOT_TOKEN
-isSelfBot = options.isSelfBot
+command_prefix = '!'
+BOT_TOKEN = os.environ['TOKEN']
 
 
 def run(client):
-    if isSelfBot:
-        client.run(BOT_TOKEN, bot=False)
-    else:
-        client.run(BOT_TOKEN)
+    client.run(BOT_TOKEN, bot=False)
 
 
-client = commands.Bot(command_prefix=command_prefix)
+client = commands.Bot(command_prefix=command_prefix, self_bot=True, fetch_offline_members=False)
 client.remove_command('help')
 
 """
@@ -141,7 +143,47 @@ client.remove_command('help')
 @client.event
 async def on_ready():
     print('Discord bot is ready.')
+    start = time.time()
+    current = start
 
+    while True:
+        await asyncio.sleep(1)
+        current += 1
+
+        if current - start >= 17959:
+            raise KeyboardInterrupt
+
+
+@client.event
+async def on_message(message):
+    messages = await message.channel.history(limit=1).flatten()
+    message = messages[0]
+
+    if message.content.startswith(f'{command_prefix}help'):
+        await help(message.channel)
+    elif message.content == f'{command_prefix}ping':
+        await ping(message.channel)
+    elif re.search(f'{command_prefix}(rec|recommend)', message.content):
+        await recommend(message, re.sub(f"^{command_prefix}rec(ommend)?", "", message.content))
+    elif re.search(f'{command_prefix}(lr|list-recommendations)', message.content):
+        page = 1
+        page_match = re.search(f'{command_prefix}(lr|list-recommendations)\s+(\d+)', message.content)
+
+        if page_match:
+            page = int(page_match.group(2))
+
+        await list_recommendations(message.channel, pageNum=page)
+    elif re.search(f'{command_prefix}(rr|remove-rec)', message.content):
+        title = re.sub(f'{command_prefix}(rr|remove-rec)', '', message.content).strip()
+        title = [x for x in re.search("(['\"](.*?)['\"])?(.*)?", title).groups() if x][-1]
+        result = remove_rec(title, message.author.id)
+
+        if result == 0:
+            await message.channel.send(embed=getSuccessEmbed('{} was successfully removed from recommendations.'.format(format_title_case(title))))
+        elif result == 1:
+            await message.channel.send(embed=getErrorEmbed('{} could not be removed from recommendations as you did not recommend it.'.format(format_title_case(title))))
+        elif result == 2:
+            await message.channel.send(embed=getErrorEmbed('{} could not be removed from recommendations as it has not been recommended.'.format(format_title_case(title))))
 
 """
 =========================================
@@ -149,34 +191,28 @@ async def on_ready():
 =========================================
 """
 commands_ = [
-    ['lr/list-recommendations',
-        'Short for list-recommendations, as the name suggests, it lists the recommendations from the recommendations list.'],
-    ['rec/recommend', 'Helps you request a source to be added in Taiyaki.'],
-    ['ping', 'Sends the latency of the bot.']
+    [f'{command_prefix}lr/{command_prefix}list-recommendations',
+        'Short for list-recommendations, as the name suggests, it lists the recommendations from the recommendations list. Example: `!lr`'],
+    [f'{command_prefix}rec/{command_prefix}recommend', 'Helps you request a source to be added in Taiyaki. Example: `!rec -tt "Recommended Novel" -tp Novel`'],
+    [f'{command_prefix}remove-rec/{command_prefix}rr', 'Removes recommendation if recommended by current user. Example: `!rr title to remove`'],
+    [f'{command_prefix}ping', 'Sends the latency of the bot. Example: `!ping`']
 ]
 
-
-@client.command()
 async def help(ctx):
     embed = discord.Embed(color=0x808080)
     embed.set_author(name='Help')
     for a in commands_:
         embed.add_field(inline=False, name=a[0], value=a[1])
-    embed.add_field(inline=False, name='help',
+    embed.add_field(inline=False, name=f'{command_prefix}help',
                     value='Lists all the available commands the bot offers.')
     await ctx.send(embed=embed)
 
-
-@client.command()
 async def ping(ctx):
     await ctx.send(f'Pong! {round(client.latency * 1000)}ms')
 
-
-@client.command(aliases=['rec'])
-async def recommend(ctx, *, arguments=''):
+async def recommend(ctx, arguments=''):
     recommended_by = str(ctx.author.id)
-    regex = r"(?<=[-{1,2}|/])([a-zA-Z0-9]*)[ |:|\"]*([\w|.|?|=|&|+| |:|/|\\]*)(?=[ |\"]|$)"
-    finds = re.findall(regex, arguments.lower())
+    finds = [[x[0], "".join(x[1:])] for x in re.findall("-{1,2}([A-Za-z]+)\s+([A-Za-z]+)?(?:'(.*?)')?(?:\"(.*?)\")?(.*?)(?=-{1,2}[A-Za-z]+|$)", arguments.lower())]
     title, comic_type = None, None
 
     for param, value in finds:
@@ -186,31 +222,29 @@ async def recommend(ctx, *, arguments=''):
             comic_type = value
 
     if title and comic_type:
-        all_recs = [[x['title'], x['requested_by']] for x in get_recs()]
+        all_recs = [[x['title'], x['recommended_by']] for x in get_recs()]
         for title_, requester in all_recs:
             if recommended_by == requester and title.lower().strip() == title_.lower().strip():
-                await ctx.send(embed=getErrorEmbed('You can\'t vote for your own request.'))
+                await ctx.channel.send(embed=getErrorEmbed('You can\'t vote for your own request.'))
                 return
         if title in [x for x, i in all_recs]:
             res = increment_counter_for_site(title, recommended_by)
             if res:
-                await ctx.send(embed=getSuccessEmbed('**{}** was already recommended, adding a vote to it instead...'.format(title)))
+                await ctx.channel.send(embed=getSuccessEmbed('**{}** was already recommended, adding a vote to it instead...'.format(title)))
             else:
-                await ctx.send(embed=getErrorEmbed('You can\'t vote multiple times for the same comic.'))
+                await ctx.channel.send(embed=getErrorEmbed('You can\'t vote multiple times for the same comic.'))
             return
         add_recommend({
             'recommended_by': recommended_by,
             'title': title,
-            'comic_type': comic_type,
+            'type': comic_type,
             'count': 1,
             'voters': []
         })
-        await ctx.send(embed=getSuccessEmbed('Successfully recommended **{}** *({})*.'.format(title, comic_type.upper())))
+        await ctx.channel.send(embed=getSuccessEmbed('Successfully recommended **{}** *({})*.'.format(title, comic_type.upper())))
     else:
-        await ctx.send(embed=getErrorEmbed('Please send the correct arguments.\nExamples:\n\t``--title "The Beginning After the End" --type webtoon``\n\t\tor\n\t``-tt "The Beginning After the End" -tp webtoon``'))
+        await ctx.channel.send(embed=getErrorEmbed('Please send the correct arguments.\nExamples:\n\t``--title "The Beginning After the End" --type webtoon``\n\t\tor\n\t``-tt "The Beginning After the End" -tp webtoon``'))
 
-
-@client.command(aliases=['list-recommendations', 'lr'])
 async def list_recommendations(ctx, pageNum: int = 1):
     recs = sorted(get_recs(), key=lambda x: x['count'])[::-1]
     pageEmbeds = {}
@@ -230,7 +264,7 @@ async def list_recommendations(ctx, pageNum: int = 1):
                     inline=False,
                     name=f"{current+1}. " + format_title_case(tmpVar['title']),
                     value='Type: {}\nRecommended by: {}{}'.format(
-                        tmpVar['comic_type'].title(
+                        tmpVar['type'].title(
                         ), f"<@{tmpVar['recommended_by']}>",
                         '' if tmpVar['count'] == 1 else f"\nVotes: {tmpVar['count']}"
                     )
@@ -238,7 +272,7 @@ async def list_recommendations(ctx, pageNum: int = 1):
             current += 1
         if page < pages:
             embed.set_footer(
-                text=f'Use "u!lr {page+1}" to go to the next page!')
+                text=f'Use "{command_prefix}lr {page+1}" to go to the next page!')
         pageEmbeds[page] = embed
 
     if pageNum in pageEmbeds:

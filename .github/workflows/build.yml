@@ -1,0 +1,44 @@
+name: Run Bot
+
+on:
+  push:
+  repository_dispatch:
+    types: [restart]
+
+jobs:
+  run_bot:
+    name: Run Bot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cancel previous runs
+        uses: styfle/cancel-workflow-action@0.5.0
+        with:
+          access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone repo
+        uses: actions/checkout@v2
+
+      - name: Install Discord.py
+        run: pip3 install discord.py
+
+      - name: Run Bot
+        run: python discordbot.py
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+
+      - name: Auto Commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update Recommendations
+          file_pattern: recommendations.json
+          repository: .
+          skip_fetch: true
+
+      - name: Restart Bot
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.REPO_ACCESS_TOKEN }}
+          event-type: restart
+          client-payload: '{"runid": "${{ github.run_id }}"}'
+
