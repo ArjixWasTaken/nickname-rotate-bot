@@ -64,7 +64,7 @@ BOT_TOKEN = os.environ['TOKEN']
 
 
 def run(client):
-    client.run(BOT_TOKEN, bot=False)
+    client.run(BOT_TOKEN, bot=True)
 
 
 client = commands.Bot(command_prefix=command_prefix,
