@@ -140,18 +140,5 @@ async def rotate_toggle(ctx):
 async def exit(ctx):
     raise KeyboardInterrupt
 
-
-"""
-=========================================
-    Events
-=========================================
-"""
-
-@tasks.loop(seconds=2)
-async def change_nicknames():
-    print("task")
-    guild = client.get_guild(737724143126052974)
-    member = guild.get_member(674710789138939916)
-    await member.edit(nick="ezdl sucks")
 if __name__ == '__main__':
     run(client)
