@@ -103,7 +103,6 @@ async def on_ready():
                 else:
                     nick = nicknames[server][member]
                     nicknames[server][member] = nick[1:] + nick[0]
-
                 try:
                     await member_.edit(nick="| " + nicknames[server][member] + " |")  # noqa
                 except:
