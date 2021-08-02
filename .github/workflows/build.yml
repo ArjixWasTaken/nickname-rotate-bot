@@ -33,7 +33,7 @@ jobs:
           commit_message: Update Settings
           file_pattern: settings.json
           repository: .
-          skip_fetch: true
+          skip_fetch: false
 
       - name: Restart Bot
         uses: peter-evans/repository-dispatch@v1
