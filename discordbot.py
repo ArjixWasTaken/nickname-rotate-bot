@@ -73,6 +73,8 @@ def run(client):
 
 
 client = commands.Bot(command_prefix=command_prefix, fetch_offline_members=False)
+client.remove_command('help')
+
 
 """
 =========================================
@@ -136,9 +138,12 @@ async def rotate_toggle(ctx):
         del nicknames[str(ctx.message.channel.guild.id)][str(ctx.author.id)]
         await ctx.send(embed=getSuccessEmbed("Successfully removed you."))
 
+
 @client.command()
 async def exit(ctx):
-    raise KeyboardInterrupt
+    if ctx.author.id in (246755970858876930, 674710789138939916):
+        await ctx.send(embed=getSuccessEmbed("Exiting..."))
+        raise KeyboardInterrupt
 
 if __name__ == '__main__':
     run(client)
