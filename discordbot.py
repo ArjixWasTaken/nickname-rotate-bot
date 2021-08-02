@@ -21,7 +21,7 @@ def add_user(guild_id, userID, member):
     settings = get_settings()
 
     if str(guild_id) not in settings["servers"]:
-        settings["servers"][str(guild_id)] = []
+        settings["servers"][str(guild_id)] = {}
         with open('settings.json', 'w') as f:
             json.dump(settings, f, indent=4)
 
