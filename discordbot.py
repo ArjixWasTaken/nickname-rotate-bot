@@ -69,7 +69,6 @@ def run(client):
 
 
 client = commands.Bot(command_prefix=command_prefix, fetch_offline_members=False)
-client.remove_command('help')
 
 """
 =========================================
