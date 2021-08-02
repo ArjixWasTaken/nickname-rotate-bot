@@ -128,10 +128,12 @@ async def ping(ctx):
 
 @client.command(aliases=["rotate"])
 async def rotate_toggle(ctx):
+    global nicknames
     if (add_user(str(ctx.message.channel.guild.id), str(ctx.author.id), ctx.message.author)):
         await ctx.send(embed=getSuccessEmbed("Successfully added you."))
     else:
         remove_user(str(ctx.message.channel.guild.id), str(ctx.author.id))
+        del nicknames[str(ctx.message.channel.guild.id)][str(ctx.author.id)]
         await ctx.send(embed=getSuccessEmbed("Successfully removed you."))
 
 @client.command()
