@@ -30,8 +30,8 @@ jobs:
       - name: Auto Commit
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Update Recommendations
-          file_pattern: recommendations.json
+          commit_message: Update Settings
+          file_pattern: settings.json
           repository: .
           skip_fetch: true
 
