@@ -17,26 +17,29 @@ def get_settings():
         return json.load(f)
 
 
-def add_user(guild_id, userID):
+def add_user(guild_id, userID, member):
     settings = get_settings()
-    
-    if str(guild_id) not in settings:
-        settings[str(guild_id)] = []
-    
-    if str(userID) not in settings['channels'][str(guild_id)]:
-        settings['servers'][str(guild_id)].append(str(userID))
+
+    if str(guild_id) not in settings["servers"]:
+        settings["servers"][str(guild_id)] = []
+        with open('settings.json', 'w') as f:
+            json.dump(settings, f, indent=4)
+
+    if str(userID) not in settings['servers'][str(guild_id)]:
+        settings['servers'][str(guild_id)][str(userID)] = (member.nick if member.nick else member.name) + " "
 
         with open('settings.json', 'w') as f:
             json.dump(settings, f, indent=4)
         return True
     return False
 
+
 def remove_user(guild_id, userID):
     settings = get_settings()
-    if str(guild_id) not in settings['channels']:
+    if str(guild_id) not in settings['servers']:
         settings['servers'][str(guild_id)] = []
 
-    settings['servers'][str(guild_id)].remove(str(userID))
+    del settings['servers'][str(guild_id)][str(userID)]
 
     with open('settings.json', 'w') as f:
         json.dump(settings, f, indent=4)
@@ -76,17 +79,34 @@ client = commands.Bot(command_prefix=command_prefix, fetch_offline_members=False
     Events
 =========================================
 """
+nicknames = {}
 
 
 @client.event
 async def on_ready():
     print('Discord bot is ready.')
     start = time.time()
-    current = start
 
     while True:
         await asyncio.sleep(1)
-        current += 1
+        servers = get_settings()['servers']
+        for server in servers:
+            serv = client.get_guild(int(server))
+            if server not in nicknames:
+                nicknames[server] = {}
+
+            for member in servers[server]:
+                member_ = await serv.fetch_member(int(member))
+
+                if member not in nicknames[server]:
+                    nicknames[server][member] = servers[server][member]
+                else:
+                    nick = nicknames[server][member]
+                    nicknames[server][member] = nick[1:] + nick[0]
+
+                await member_.edit(nick="| " + nicknames[server][member] + " |")  # noqa
+
+        current = time.time()
 
         if current - start >= 17959:
             raise KeyboardInterrupt
@@ -106,7 +126,7 @@ async def ping(ctx):
 
 @client.command(aliases=["rotate"])
 async def rotate_toggle(ctx):
-    if (add_user(str(ctx.message.channel.guild.id), str(ctx.author.id))):
+    if (add_user(str(ctx.message.channel.guild.id), str(ctx.author.id), ctx.message.author)):
         await ctx.send(embed=getSuccessEmbed("Successfully added you."))
     else:
         remove_user(str(ctx.message.channel.guild.id), str(ctx.author.id))
@@ -116,7 +136,7 @@ async def rotate_toggle(ctx):
 async def exit(ctx):
     raise KeyboardInterrupt
 
-    
+
 """
 =========================================
     Events
