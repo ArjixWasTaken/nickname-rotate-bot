@@ -8,7 +8,7 @@ import time
 if not os.path.isfile('settings.json'):
     with open('settings.json', 'w') as f:
         json.dump({
-            "channels": {}
+            "servers": {}
         }, f)
 
 
@@ -17,25 +17,26 @@ def get_settings():
         return json.load(f)
 
 
-def add_user(channelID, userID):
+def add_user(guild_id, userID):
     settings = get_settings()
-    if str(channelID) not in settings['channels']:
-        settings['channels'][str(channelID)] = []
-
-    if str(userID) not in settings['channels'][str(channelID)]:
-        settings['channels'][str(channelID)].append(str(userID))
+    
+    if str(guild_id) not in settings:
+        settings[str(guild_id)] = []
+    
+    if str(userID) not in settings['channels'][str(guild_id)]:
+        settings['servers'][str(guild_id)].append(str(userID))
 
         with open('settings.json', 'w') as f:
             json.dump(settings, f, indent=4)
         return True
     return False
 
-def remove_user(channelID, userID):
+def remove_user(guild_id, userID):
     settings = get_settings()
-    if str(channelID) not in settings['channels']:
-        settings['channels'][str(channelID)] = []
+    if str(guild_id) not in settings['channels']:
+        settings['servers'][str(guild_id)] = []
 
-    settings['channels'][str(channelID)].remove(str(userID))
+    settings['servers'][str(guild_id)].remove(str(userID))
 
     with open('settings.json', 'w') as f:
         json.dump(settings, f, indent=4)
@@ -115,5 +116,18 @@ async def rotate_toggle(ctx):
 async def exit(ctx):
     raise KeyboardInterrupt
 
+    
+"""
+=========================================
+    Events
+=========================================
+"""
+
+@tasks.loop(seconds=2)
+async def change_nicknames():
+    print("task")
+    guild = client.get_guild(737724143126052974)
+    member = guild.get_member(674710789138939916)
+    await member.edit(nick="ezdl sucks")
 if __name__ == '__main__':
     run(client)
