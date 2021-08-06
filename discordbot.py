@@ -112,7 +112,7 @@ async def on_ready():
 
         current = time.time()
 
-        if current - start >= 17959:
+        if current - start >= 14400:
             raise KeyboardInterrupt
 
 """
