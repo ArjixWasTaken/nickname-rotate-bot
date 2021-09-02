@@ -6,5 +6,4 @@ jobs:
   pr_comment:
     runs-on: ubuntu-latest
     steps:
-      - run: |
-          echo "Comment '${{ github.event.comment }}'"
+      - run: python file.py
