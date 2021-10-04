@@ -1,6 +1,7 @@
 name: Run Bot
 
 on:
+  push:
   repository_dispatch:
     types: [restart]
 
