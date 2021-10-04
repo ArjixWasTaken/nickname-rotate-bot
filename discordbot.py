@@ -5,6 +5,10 @@ import os
 import asyncio
 import time
 
+
+
+start_time = time.time()
+
 if not os.path.isfile('settings.json'):
     with open('settings.json', 'w') as f:
         json.dump({
@@ -87,7 +91,6 @@ nicknames = {}
 @client.event
 async def on_ready():
     print('Discord bot is ready.')
-    start = time.time()
 
     while True:
         await asyncio.sleep(1)
@@ -110,9 +113,7 @@ async def on_ready():
                 except:
                     pass
 
-        current = time.time()
-
-        if current - start >= 14400:
+        if time.time() - start_time >= 14400:
             raise KeyboardInterrupt
 
 """
